@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/lib/auth-client";
 
 export function LoginForm({
   className,
@@ -35,7 +35,7 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      const { error } = await authClient.signIn.email({
+      const { error } = await signIn.email({
         email,
         password,
       });
@@ -52,8 +52,9 @@ export function LoginForm({
   }
 
   async function handleGoogleLogin() {
-    await authClient.signIn.social({
+    await signIn.social({
       provider: "google",
+      callbackURL: "/dashboard",
     });
   }
 

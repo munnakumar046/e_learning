@@ -30,10 +30,8 @@ export default function Page() {
             <div className="gap-4 py-4">
               <ContinueLearning />
             </div>
-            <div>
-              <ChartAreaInteractive />
-            </div>
-            <DataTable data={data} />
+            <div>{/* <ChartAreaInteractive /> */}</div>
+            {/* <DataTable data={data} /> */}
           </div>
 
           <div className="col-span-4">

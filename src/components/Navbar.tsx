@@ -184,7 +184,7 @@ export function NavigationMenuDemo() {
               <NavigationMenuItem>
                 <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
-                  render={<Link href="/docs">Docs</Link>}
+                  render={<Link href="/dashboard">Dashboard</Link>}
                 />
               </NavigationMenuItem>
             </NavigationMenuList>

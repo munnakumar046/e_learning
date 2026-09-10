@@ -1,10 +1,17 @@
+"use client";
+
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Bell } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
 export function SiteHeader() {
+  const { data } = useSession();
+  // console.log(data?.user.name);
+  // console.log(data?.user.email);
+
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -26,6 +33,7 @@ export function SiteHeader() {
         {/* Notification icon on the right */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-4 w-4" />
+
           {/* Optional unread indicator */}
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
         </Button>
