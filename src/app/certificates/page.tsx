@@ -1,15 +1,19 @@
+import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
-import MyCoursesSection from "@/components/my-courses-section";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import CertificatesSection from "@/components/certificates-section";
 import { getCurrentUser } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { getMyCertificates } from "@/lib/certificate";
 
-export default async function CoursesPage() {
+export default async function CertificatesPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
+
+  const certificates = await getMyCertificates(user.id);
+
   return (
     <SidebarProvider
       style={
@@ -23,7 +27,7 @@ export default async function CoursesPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="px-4 py-4">
-          <MyCoursesSection />
+          <CertificatesSection initialCertificates={certificates} />
         </div>
       </SidebarInset>
     </SidebarProvider>

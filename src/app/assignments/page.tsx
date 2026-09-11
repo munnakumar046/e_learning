@@ -1,15 +1,20 @@
+import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
-import MyCoursesSection from "@/components/my-courses-section";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import AssignmentsSection from "@/components/assignments-section";
+import { Toaster } from "@/components/ui/sonner";
 import { getCurrentUser } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { getMyAssignments } from "@/lib/assignments";
 
-export default async function CoursesPage() {
+export default async function AssignmentsPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
+
+  const assignments = await getMyAssignments(user.id);
+
   return (
     <SidebarProvider
       style={
@@ -23,9 +28,10 @@ export default async function CoursesPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="px-4 py-4">
-          <MyCoursesSection />
+          <AssignmentsSection initialAssignments={assignments} />
         </div>
       </SidebarInset>
+      <Toaster position="top-right" />
     </SidebarProvider>
   );
 }

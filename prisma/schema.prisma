@@ -24,8 +24,193 @@ model User {
   accounts      Account[]
   posts Post[]
 
+  coursesTaught      Course[]               @relation("InstructorCourses")
+  enrollments        Enrollment[]
+  liveClassesTaught  LiveClass[]            @relation("InstructorLiveClasses")
+  liveClassRsvps     LiveClassAttendee[]
+  assignmentSubmissions AssignmentSubmission[]
+  certificates       Certificate[]
+
   @@unique([email])
   @@map("user")
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum EnrollmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Course {
+  id              String       @id @default(uuid())
+  title           String
+  slug            String       @unique
+  description     String?
+  category        String
+  image           String?
+  level           CourseLevel  @default(BEGINNER)
+  durationMinutes Int          @default(0)
+  rating          Float        @default(0)
+  instructorId    String
+  instructor      User         @relation("InstructorCourses", fields: [instructorId], references: [id])
+  lessons         Lesson[]
+  enrollments     Enrollment[]
+  liveClasses     LiveClass[]
+  assignments     Assignment[]
+  certificates    Certificate[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([instructorId])
+  @@map("course")
+}
+
+model Lesson {
+  id       String           @id @default(uuid())
+  title    String
+  order    Int
+  courseId String
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@unique([courseId, order])
+  @@map("lesson")
+}
+
+model Enrollment {
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId       String
+  course         Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status         EnrollmentStatus  @default(NOT_STARTED)
+  enrolledAt     DateTime          @default(now())
+  lastAccessedAt DateTime?
+  completedAt    DateTime?
+  lessonProgress LessonProgress[]
+  certificate    Certificate?
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@map("enrollment")
+}
+
+model LessonProgress {
+  id           String     @id @default(uuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed    Boolean    @default(false)
+  completedAt  DateTime?
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
+}
+
+enum LiveClassStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+model LiveClass {
+  id           String              @id @default(uuid())
+  title        String
+  description  String?
+  courseId     String?
+  course       Course?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  instructorId String
+  instructor   User                @relation("InstructorLiveClasses", fields: [instructorId], references: [id])
+  startTime    DateTime
+  endTime      DateTime
+  meetingUrl   String?
+  status       LiveClassStatus     @default(UPCOMING)
+  attendees    LiveClassAttendee[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([instructorId])
+  @@index([courseId])
+  @@map("live_class")
+}
+
+model LiveClassAttendee {
+  id           String    @id @default(uuid())
+  liveClassId  String
+  liveClass    LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registeredAt DateTime  @default(now())
+  attended     Boolean   @default(false)
+
+  @@unique([liveClassId, userId])
+  @@index([userId])
+  @@map("live_class_attendee")
+}
+
+enum AssignmentStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+  LATE
+}
+
+model Assignment {
+  id          String                 @id @default(uuid())
+  title       String
+  description String?
+  courseId    String
+  course      Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  dueDate     DateTime
+  maxScore    Int                    @default(100)
+  submissions AssignmentSubmission[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([courseId])
+  @@map("assignment")
+}
+
+model AssignmentSubmission {
+  id             String           @id @default(uuid())
+  assignmentId   String
+  assignment     Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         AssignmentStatus @default(PENDING)
+  submissionUrl  String?
+  submissionNote String?
+  submittedAt    DateTime?
+  score          Int?
+  feedback       String?
+  gradedAt       DateTime?
+
+  @@unique([assignmentId, userId])
+  @@index([userId])
+  @@map("assignment_submission")
+}
+
+model Certificate {
+  id                String     @id @default(uuid())
+  enrollmentId      String     @unique
+  enrollment        Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId          String
+  course            Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  certificateNumber String     @unique
+  issuedAt          DateTime   @default(now())
+
+  @@index([userId])
+  @@map("certificate")
 }
 
 model Post { 
